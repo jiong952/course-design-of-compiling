@@ -1,0 +1,10 @@
+PROGRAM E07;
+VAR A,B,C;
+BEGIN
+	A:=10;
+	B:=100;
+	A++;
+	B--;
+	WRITE(A);
+	WRITE(B);
+END.
