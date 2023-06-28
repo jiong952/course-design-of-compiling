@@ -17,7 +17,7 @@ const  AMAX  =2047;  /* MAXIMUM ADDRESS */
 const  LEVMAX=   3;  /* MAX DEPTH OF BLOCK NESTING */
 const  CXMAX = 200;  /* SIZE OF CODE ARRAY */
 
-//符号
+//????
 typedef enum { NUL,     IDENT,    NUMBER,    PLUS,     MINUS,   TIMES,
 	      SLASH,    ODDSYM,   EQL,       NEQ,      LSS,     LEQ,
               GTR,      GEQ,      LPAREN,    RPAREN,   COMMA,   SEMICOLON,
@@ -253,25 +253,25 @@ void GetSym() {
                 SYM=NUL;
                 A[0]='/';
                 A[1]='*';
-                K=2;//已经读入两个字符
+                K=2;//??????????????
                 do{
-                        GetCh();//获取下一个字符
-                        if(CH=='*'){//判断是否是结束的开始标记*
-                                GetCh();//获取下一个字符
-                                if(CH=='/'){//判断是否构成*/注释结束标志
+                        GetCh();//???????????
+                        if(CH=='*'){//?ж????????????????*
+                                GetCh();//???????????
+                                if(CH=='/'){//?ж?????*/?????????
                                         A[K++]='*';
                                         A[K++]='/';
-                                        break;//跳出循环
+                                        break;//???????
                                 }else{
                                         A[K++]='*';
-                                        A[K++]=CH;//将下一个字符添加进去
+                                        A[K++]=CH;//????????????????
                                 }
-                        }else{//未试别到结束的开始标记*
+                        }else{//δ?????????????*
                                 A[K++]=CH;
                         }
-                }while(true);//如果后面还有符号就继续读取下一个字符
-                Form1->printfs(A);//将注释的内容输出展示
-                GetCh();//获取下一个字符
+                }while(true);//??????滹?з??????????????????
+                Form1->printfs(A);//???????????????
+                GetCh();//???????????
                 GetSym();
         }
         else {SYM=SLASH;}
@@ -380,14 +380,14 @@ void FACTOR(SYMSET FSYS, int LEV, int &TX) {
 		  else Error(22);
 		}
                 else if(SYM==ELSESYM){
-                     break;//因子分析的过程中，将ELSESYM也当成其开始因子，没有对其操作会进入无限循环
+                     break;//?????????????У???ELSESYM??????俪????????ж??????????????????
                 }
-                else if(SYM==TOSYM){ //分析为To跳出
+                else if(SYM==TOSYM){ //?????To????
                      break;
                 }
-                else if(SYM==DOWNTOSYM){  //分析为DownTo跳出
+                else if(SYM==DOWNTOSYM){  //?????DownTo????
                      break;
-                }else if(SYM==DOSYM){  //分析为Do跳出
+                }else if(SYM==DOSYM){  //?????Do????
                      break;
 
                 }
@@ -408,95 +408,11 @@ void TERM(SYMSET FSYS, int LEV, int &TX) {  /*TERM*/
 //---------------------------------------------------------------------------
 void EXPRESSION(SYMSET FSYS, int LEV, int &TX) {
   SYMBOL ADDOP;
-  int i; // 新增 int i
   if (SYM==PLUS || SYM==MINUS) {
     ADDOP=SYM; GetSym();
     TERM(SymSetUnion(FSYS,SymSetNew(PLUS,MINUS)),LEV,TX);
     if (ADDOP==MINUS) GEN(OPR,0,1);
   }
-  // ↓↓↓ 新增部分 ↓↓↓
-  else if(SYM==PLUSPLUS){     // ++i
-      GetSym();
-      if(SYM==IDENT){
-          i=POSITION(ID,TX);
-          if(i==0) Error(11);
-          else if(TABLE[i].KIND!=VARIABLE){
-              Error(12);
-              i=0;
-          }
-          if(i!=0) GEN(LOD,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);
-          GEN(LIT,0,1);
-          GEN(OPR,0,2);
-          if(i!=0){
-              GEN(STO,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);
-              GEN(LOD,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);
-          }
-          GetSym();
-      }
-      else Error(45);
-  }
-  else if(SYM==MINUSMINUS){     // --i
-      GetSym();
-      if(SYM==IDENT){
-          i=POSITION(ID,TX);
-          if(i==0) Error(11);
-          else if(TABLE[i].KIND!=VARIABLE){
-              Error(12);
-              i=0;
-          }
-          if(i!=0) GEN(LOD,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);
-          GEN(LIT,0,1);
-          GEN(OPR,0,3);
-          if(i!=0){
-              GEN(STO,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);
-              GEN(LOD,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);
-          }
-          GetSym();
-      }
-      else Error(45);
-  }
-  // ↑↑↑ 新增部分 ↑↑↑// ↓↓↓ 新增部分 ↓↓↓
-  else if(SYM==PLUSPLUS){     // ++i
-      GetSym();
-      if(SYM==IDENT){
-          i=POSITION(ID,TX);
-          if(i==0) Error(11);
-          else if(TABLE[i].KIND!=VARIABLE){
-              Error(12);
-              i=0;
-          }
-          if(i!=0) GEN(LOD,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);
-          GEN(LIT,0,1);
-          GEN(OPR,0,2);
-          if(i!=0){
-              GEN(STO,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);
-              GEN(LOD,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);
-          }
-          GetSym();
-      }
-      else Error(45);
-  }
-  else if(SYM==MINUSMINUS){     // --i
-      GetSym();
-      if(SYM==IDENT){
-          i=POSITION(ID,TX);
-          if(i==0) Error(11);
-          else if(TABLE[i].KIND!=VARIABLE){
-              Error(12);
-              i=0;
-          }
-          if(i!=0) GEN(LOD,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);
-          GEN(LIT,0,1);
-          GEN(OPR,0,3);
-          if(i!=0){
-              GEN(STO,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);
-              GEN(LOD,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);
-          }
-          GetSym();
-      }
-      else Error(45);
-  }
-  // ↑↑↑ 新增部分 ↑↑↑
   else TERM(SymSetUnion(FSYS,SymSetNew(PLUS,MINUS)),LEV,TX);
   while (SYM==PLUS || SYM==MINUS) {
     ADDOP=SYM; GetSym();
@@ -543,40 +459,40 @@ void STATEMENT(SYMSET FSYS,int LEV,int &TX) {   /*STATEMENT*/
 			if (i!=0) GEN(STO,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);
 		}
 		else if (SYM==PLUSBECOMES){ //codes for +=
-                        GetSym(); //获取到右边的表达式
-			if (i!=0){ //若变量存在
-                                GEN(LOD,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR); //将该变量取出到栈顶
-                                EXPRESSION(FSYS,LEV,TX); //对表达式进行处理，其结果在栈顶
-                                GEN(OPR,0,2); //将栈顶的两个元素做加法
-                                GEN(STO,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR); //将栈顶元素作为变量的值进行保存
+                        GetSym(); //?????????????
+			if (i!=0){ //??????????
+                                GEN(LOD,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR); //???????????????
+                                EXPRESSION(FSYS,LEV,TX); //?????????д??????????????
+                                GEN(OPR,0,2); //???????????????????
+                                GEN(STO,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR); //?????????????????????б???
                         }
 		}
 		else if(SYM==MINUSBECOMES){ //codes for -=
-                        GetSym(); //获取到右边的表达式
-			if (i!=0){ //若变量存在
-                                GEN(LOD,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR); //将该变量取出到栈顶
-                                EXPRESSION(FSYS,LEV,TX); //对右边表达式进行处理，其结果在栈顶
-                                GEN(OPR,0,3); //将栈顶的两个元素做加法
-                                GEN(STO,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR); //将栈顶元素作为变量的值进行保存
+                        GetSym(); //?????????????
+			if (i!=0){ //??????????
+                                GEN(LOD,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR); //???????????????
+                                EXPRESSION(FSYS,LEV,TX); //????????????д??????????????
+                                GEN(OPR,0,3); //???????????????????
+                                GEN(STO,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR); //?????????????????????б???
                         }
 		}
                 else if (SYM==PLUSPLUS){
                         if(i!=0){
-                                GEN(LOD,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);//将变量A入栈
-                                GEN(LIT,0,1);//设置自增量1
-                                GEN(OPR,0,2);//将栈顶两元素相加，结果放置栈顶（即A+1）
-                                GEN(STO,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);//保存自增后的值到A（完成A++操作）
+                                GEN(LOD,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);//??????A???
+                                GEN(LIT,0,1);//??????????1
+                                GEN(OPR,0,2);//????????????????????????????A+1??
+                                GEN(STO,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);//??????????????A?????A++??????
                         }
-                        GetSym();//加上这个使得能够读取自增符号后面的分号
+                        GetSym();//??????????????????????????????
                 }
                 else if (SYM==MINUSMINUS){
                         if(i!=0){
-                                GEN(LOD,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);//将变量A入栈
-                                GEN(LIT,0,1);//设置自减量1
-                                GEN(OPR,0,3);//将栈顶两元素减，结果放置栈顶（即A-1）
-                                GEN(STO,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);//保存自增后的值到A（完成A--操作）
+                                GEN(LOD,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);//??????A???
+                                GEN(LIT,0,1);//?????????1
+                                GEN(OPR,0,3);//???????????????????????????A-1??
+                                GEN(STO,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);//??????????????A?????A--??????
                         }
-                        GetSym();//加上这个使得能够读取自减符号后面的分号
+                        GetSym();//?????????????????????????????
                 }
 		else Error(13);
 		break;
@@ -629,20 +545,20 @@ void STATEMENT(SYMSET FSYS,int LEV,int &TX) {   /*STATEMENT*/
 		break;
 	case IFSYM:
 		GetSym();
-		CONDITION(SymSetUnion(SymSetNew(THENSYM,DOSYM),FSYS),LEV,TX);/*调用条件处理，处理if的内容=> if（xxx）即处理xxx的部分*/
+		CONDITION(SymSetUnion(SymSetNew(THENSYM,DOSYM),FSYS),LEV,TX);/*??????????????????if??????=> if??xxx????????xxx?????*/
 		if (SYM==THENSYM) GetSym();
 		else Error(16);
-		CX1=CX;  /*保存当前指令地址*/
-                GEN(JPC,0,0); /*生成条件跳转指令，跳转地址未知．暂时写0*/
-		STATEMENT(FSYS,LEV,TX);  /*处理then后面的语句*/
-                if(SYM!=ELSESYM){CODE[CX1].A=CX;} /*如果是if then语句 直接设置条件跳转地址*/
-                else {    /*如果是if then else语句*/
+		CX1=CX;  /*???浱??????*/
+                GEN(JPC,0,0); /*????????????????????δ??????д0*/
+		STATEMENT(FSYS,LEV,TX);  /*????then????????*/
+                if(SYM!=ELSESYM){CODE[CX1].A=CX;} /*?????if then??? ?????????????????*/
+                else {    /*?????if then else???*/
                         GetSym();
                         CX2=CX;
-                        GEN(JMP,0,0);  /*生成无条件跳转语句，跳转的目的地址将是else语句块生成指令的尾地址*/
-                        CODE[CX1].A=CX; /*CX1的目的跳转地址（如果if为false，跳转到这（注意：这里已经是跳到了jump指令的下一条，即jump指令不会执行！）*/
-                        STATEMENT(FSYS,LEV,TX); /*处理else语句块*/
-                        CODE[CX2].A=CX; /*CX2的目的”无条件“跳转地址（只有if为true才能够执行到jump，也才能够直接跳过else语句块的执行）*/
+                        GEN(JMP,0,0);  /*??????????????????????????????else????????????β???*/
+                        CODE[CX1].A=CX; /*CX1????????????????if?false???????????????????????????jump?????????????jump???????У???*/
+                        STATEMENT(FSYS,LEV,TX); /*????else????*/
+                        CODE[CX2].A=CX; /*CX2?????????????????????????if?true???????е?jump???????????????else???????У?*/
                         }
 		break;
 	case BEGINSYM:
@@ -670,8 +586,8 @@ void STATEMENT(SYMSET FSYS,int LEV,int &TX) {   /*STATEMENT*/
                 Form1->printfs("----ELSESYM----");
                 break;
        case FORSYM:
-                GetSym();//获取赋值语句表达式
-                i=POSITION(ID,TX);//获取变量位置
+                GetSym();//?????????????
+                i=POSITION(ID,TX);//???????λ??
 		if (i==0) {
                         Form1->printfs("following for must be an ident.");
                         Error(11);
@@ -679,84 +595,55 @@ void STATEMENT(SYMSET FSYS,int LEV,int &TX) {   /*STATEMENT*/
 		else if (TABLE[i].KIND!=VARIABLE) { /*ASSIGNMENT TO NON-VARIABLE*/
 			Error(12);
                 }
-                STATEMENT(SymSetUnion(SymSetNew(TOSYM,DOWNTOSYM),FSYS),LEV,TX);//处理表达式，以TO或者DOWNTO结尾
-                if(SYM==TOSYM){//判断后跟符号是否为TO
-                        GetSym();//获取TO后面的表达式
-                        CX1=CX;//记录每趟循环结束后回到的判断位置的地址
-                        GEN(LOD,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);//将赋值语句的值（A）放到栈顶
-                        EXPRESSION(SymSetUnion(SymSetNew(TOSYM,DOWNTOSYM,DOSYM),FSYS),LEV,TX);//对TO后面的表达式进行处理，其表达式的结果放置栈顶
-                        GEN(OPR,0,10);//比较次栈顶是否小于栈顶（A<B），AB出栈，结果入栈顶
-                        if(SYM==DOSYM){//判断后跟符号是否为DO
-                                CX2=CX;//记录DO执行开始时候的地址
-                                GEN(JPC,0,0);//设置条件跳转
-                                GetSym();//获取DO后面的表达式
-                                STATEMENT(FSYS,LEV,TX);//处理DO后面编译操作
-                                GEN(LOD,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);//将赋值语句的值（A）放到栈顶
-                                GEN(LIT,0,1);//设置步长为1
-                                GEN(OPR,0,2);//将栈顶两元素相加，结果放置栈顶（即A+1）
-                                GEN(STO,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);//修改A的值（完成A++操作）
-                                GEN(JMP,0,CX1);//无条件跳转至AB比较的地方（此时AB还未加载进进栈）
-                                CODE[CX2].A=CX;//确定JPC跳转的目的地址（若JPC判断为假，则循环结束）
-                        }else Error(18);//缺少DO报错代号
+                STATEMENT(SymSetUnion(SymSetNew(TOSYM,DOWNTOSYM),FSYS),LEV,TX);//?????????????TO????DOWNTO??β
+                if(SYM==TOSYM){//?ж???????????TO
+                        GetSym();//???TO?????????
+                        CX1=CX;//????????????????????ж?λ?????
+                        GEN(LOD,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);//????????????A????????
+                        EXPRESSION(SymSetUnion(SymSetNew(TOSYM,DOWNTOSYM,DOSYM),FSYS),LEV,TX);//??TO????????????д??????????????????????
+                        GEN(OPR,0,10);//??????????С???????A<B????AB?????????????
+                        if(SYM==DOSYM){//?ж???????????DO
+                                CX2=CX;//???DO??п????????
+                                GEN(JPC,0,0);//???????????
+                                GetSym();//???DO?????????
+                                STATEMENT(FSYS,LEV,TX);//????DO??????????
+                                GEN(LOD,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);//????????????A????????
+                                GEN(LIT,0,1);//???ò????1
+                                GEN(OPR,0,2);//????????????????????????????A+1??
+                                GEN(STO,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);//???A????????A++??????
+                                GEN(JMP,0,CX1);//???????????AB???????????AB??δ??????????
+                                CODE[CX2].A=CX;//???JPC??????????????JPC?ж????????????????
+                        }else Error(18);//???DO????????
                 }
-                else if(SYM==DOWNTOSYM){//判断后跟符号是否为DOWNTO
-                        GetSym();//获取DOWNTO后面的表达式
-                        CX1=CX;//记录每趟循环结束后回到的判断位置的地址
-                        EXPRESSION(SymSetUnion(SymSetNew(TOSYM,DOWNTOSYM,DOSYM),FSYS),LEV,TX);//对DOWNTO后面的表达式进行处理，其表达式的结果放置栈顶
-                        if(SYM==DOSYM){//判断后跟符号是否为DO
-                                GEN(LOD,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);//将赋值语句的值（A）放到栈顶
-                                GEN(OPR,0,10);//比较次栈顶是否小于栈顶（A<B），AB出栈，结果入栈顶
-                                CX2=CX;//记录DO执行开始时候的地址
-                                GEN(JPC,0,0);//设置条件跳转
-                                GetSym();//获取DO后面的表达式
-                                STATEMENT(FSYS,LEV,TX);//处理DO后面编译操作
-                                GEN(LOD,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);//将赋值语句的值（A）放到栈顶
-                                GEN(LIT,0,1);//设置步长为1
-                                GEN(OPR,0,3);//将栈顶两元素相加，结果放置栈顶（即A-1）
-                                GEN(STO,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);//修改A的值（完成A--操作）
-                                GEN(JMP,0,CX1);//无条件跳转至AB比较的地方（此时AB还未加载进进栈）
-                                CODE[CX2].A=CX;//确定JPC跳转的目的地址（若JPC判断为假，则循环结束）
-                        }else Error(18);//缺少DO报错代号
-                }else Error(36);//缺少TO或者DOWNTO
+                else if(SYM==DOWNTOSYM){//?ж???????????DOWNTO
+                        GetSym();//???DOWNTO?????????
+                        CX1=CX;//????????????????????ж?λ?????
+                        EXPRESSION(SymSetUnion(SymSetNew(TOSYM,DOWNTOSYM,DOSYM),FSYS),LEV,TX);//??DOWNTO????????????д??????????????????????
+                        if(SYM==DOSYM){//?ж???????????DO
+                                GEN(LOD,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);//????????????A????????
+                                GEN(OPR,0,10);//??????????С???????A<B????AB?????????????
+                                CX2=CX;//???DO??п????????
+                                GEN(JPC,0,0);//???????????
+                                GetSym();//???DO?????????
+                                STATEMENT(FSYS,LEV,TX);//????DO??????????
+                                GEN(LOD,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);//????????????A????????
+                                GEN(LIT,0,1);//???ò????1
+                                GEN(OPR,0,3);//????????????????????????????A-1??
+                                GEN(STO,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);//???A????????A--??????
+                                GEN(JMP,0,CX1);//???????????AB???????????AB??δ??????????
+                                CODE[CX2].A=CX;//???JPC??????????????JPC?ж????????????????
+                        }else Error(18);//???DO????????
+                }else Error(36);//???TO????DOWNTO
                 break;
 
-      // ++i
        case PLUSPLUS:
                 GetSym();
                 Form1->printfs("----PLUSPLUS----");
-                if(SYM==IDENT){
-                    i=POSITION(ID,TX);
-                    if(i==0) Error(11);
-                    else if(TABLE[i].KIND!=VARIABLE){
-                        Error(12);
-                        i=0;
-                    }
-                    if(i!=0) GEN(LOD,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);
-                    GEN(LIT,0,1);
-                    GEN(OPR,0,2);
-                    if(i!=0) GEN(STO,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);
-                    GetSym();
-                }
-                else Error(45);
                 break;
-       // --i
+
        case MINUSMINUS:
                 GetSym();
                 Form1->printfs("----MINUSMINUS----");
-                if(SYM==IDENT){
-                    i=POSITION(ID,TX);
-                    if(i==0) Error(11);
-                    else if(TABLE[i].KIND!=VARIABLE){
-                        Error(12);
-                        i=0;
-                    }
-                    if(i!=0) GEN(LOD,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);
-                    GEN(LIT,0,1);
-                    GEN(OPR,0,3);
-                    if(i!=0) GEN(STO,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);
-                    GetSym();
-                }
-                else Error(45);
                 break;
        case TOSYM:
                 GetSym();
@@ -876,7 +763,7 @@ void Interpret() {
 	      case 14: Form1->printls("",S[T]); fprintf(FOUT,"%d\n",S[T]); T--;
                    break;
 	      case 15: /*Form1->printfs(""); fprintf(FOUT,"\n"); */ break;
-	      case 16: T++;  S[T]=InputBox("输入","请键盘输入：", 0).ToInt();
+	      case 16: T++;  S[T]=InputBox("????","?????????", 0).ToInt();
                    Form1->printls("? ",S[T]); fprintf(FOUT,"? %d\n",S[T]);
 		           break;
 	    }
@@ -976,7 +863,6 @@ void __fastcall TForm1::ButtonRunClick(TObject *Sender) {
   }
 }
 //---------------------------------------------------------------------------
-
 
 
 

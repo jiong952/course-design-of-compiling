@@ -10,7 +10,7 @@ TForm1 *Form1;
 //---------------------------------------------------------------------------
 
 const  AL    =  10;  /* LENGTH OF IDENTIFIERS */
-const  NORW  =  14+5;  /* # OF RESERVED WORDS */
+const  NORW  =  14+5+1;  /* # OF RESERVED WORDS */
 const  TXMAX = 100;  /* LENGTH OF IDENTIFIER TABLE */
 const  NMAX  =  14;  /* MAX NUMBER OF DEGITS IN NUMBERS */
 const  AMAX  =2047;  /* MAXIMUM ADDRESS */
@@ -25,7 +25,7 @@ typedef enum { NUL,     IDENT,    NUMBER,    PLUS,     MINUS,   TIMES,
 	      WHILESYM, WRITESYM, READSYM,   DOSYM,   CALLSYM,	CONSTSYM,
               VARSYM,   PROCSYM,  PROGSYM,   ELSESYM, FORSYM,	TOSYM,
               DOWNTOSYM,RETURNSYM,PLUSBECOMES,MINUSBECOMES,PLUSPLUS, MINUSMINUS,
-              NOTESYM
+              NOTESYM,lbrack,rbrack
         } SYMBOL;
 char *SYMOUT[] = {"NUL", "IDENT", "NUMBER", "PLUS", "MINUS", "TIMES",
 	    "SLASH", "ODDSYM", "EQL", "NEQ", "LSS", "LEQ", "GTR", "GEQ",
@@ -34,14 +34,14 @@ char *SYMOUT[] = {"NUL", "IDENT", "NUMBER", "PLUS", "MINUS", "TIMES",
 	    "WHILESYM", "WRITESYM", "READSYM", "DOSYM", "CALLSYM",
 	    "CONSTSYM", "VARSYM", "PROCSYM", "PROGSYM", "ELSESYM",
             "FORSYM",  "TOSYM", "DOWNTOSYM", "RETURNSYM", "PLUSBECOMES",
-            "MINUSBECOMES",	"PLUSPLUS", "MINUSMINUS", "NOTESYM"};
+            "MINUSBECOMES",	"PLUSPLUS", "MINUSMINUS", "NOTESYM","lbrack","rbrack"};
 
 
 typedef  int *SYMSET; // SET OF SYMBOL;
 typedef  char ALFA[11];
 
-typedef  enum { CONSTANT, VARIABLE, PROCEDUR } OBJECTS ;
-typedef  enum { LIT, OPR, LOD, STO, CAL, INI, JMP, JPC } FCT;
+typedef  enum { CONSTANT, VARIABLE, PROCEDUR ,ARRAY} OBJECTS ;
+typedef  enum { LIT, OPR, LOD, STO, CAL, INI, JMP, JPC , STA, LDA} FCT;
 typedef struct {
 	 FCT F;     /*FUNCTION CODE*/
 	 int L; 	/*0..LEVMAX  LEVEL*/
@@ -63,6 +63,8 @@ int    CC;  /*CHARACTER COUNT*/
 int    LL;  /*LINE LENGTH*/
 int    CX;  /*CODE ALLOCATION INDEX*/
 char   LINE[81];
+//TODO 数组标志
+bool isarr = false;
 INSTRUCTION  CODE[CXMAX];
 ALFA    KWORD[NORW+1];
 SYMBOL  WSYM[NORW+1];
@@ -76,6 +78,7 @@ struct {
   union {
     int VAL;   /*CONSTANT*/
     struct { int LEVEL,ADR,SIZE; } vp;  /*VARIABLE,PROCEDUR:*/
+    int upbound; /*数组上界*/
   };
 } TABLE[TXMAX];
 
@@ -90,8 +93,8 @@ int SymIn(SYMBOL SYM, SYMSET S1) {
 }
 //---------------------------------------------------------------------------
 SYMSET SymSetUnion(SYMSET S1, SYMSET S2) {
-  SYMSET S=(SYMSET)malloc(sizeof(int)*43);
-  for (int i=0; i<43; i++)
+  SYMSET S=(SYMSET)malloc(sizeof(int)*46);
+  for (int i=0; i<46; i++)
 	if (S1[i] || S2[i]) S[i]=1;
 	else S[i]=0;
   return S;
@@ -99,64 +102,64 @@ SYMSET SymSetUnion(SYMSET S1, SYMSET S2) {
 //---------------------------------------------------------------------------
 SYMSET SymSetAdd(SYMBOL SY, SYMSET S) {
   SYMSET S1;
-  S1=(SYMSET)malloc(sizeof(int)*43);
-  for (int i=0; i<43; i++) S1[i]=S[i];
+  S1=(SYMSET)malloc(sizeof(int)*46);
+  for (int i=0; i<46; i++) S1[i]=S[i];
   S1[SY]=1;
   return S1;
 }
 //---------------------------------------------------------------------------
 SYMSET SymSetNew(SYMBOL a) {
   SYMSET S; int i,k;
-  S=(SYMSET)malloc(sizeof(int)*43);
-  for (i=0; i<43; i++) S[i]=0;
+  S=(SYMSET)malloc(sizeof(int)*46);
+  for (i=0; i<46; i++) S[i]=0;
   S[a]=1;
   return S;
 }
 //---------------------------------------------------------------------------
 SYMSET SymSetNew(SYMBOL a, SYMBOL b) {
   SYMSET S; int i,k;
-  S=(SYMSET)malloc(sizeof(int)*43);
-  for (i=0; i<43; i++) S[i]=0;
+  S=(SYMSET)malloc(sizeof(int)*46);
+  for (i=0; i<46; i++) S[i]=0;
   S[a]=1;  S[b]=1;
   return S;
 }
 //---------------------------------------------------------------------------
 SYMSET SymSetNew(SYMBOL a, SYMBOL b, SYMBOL c) {
   SYMSET S; int i,k;
-  S=(SYMSET)malloc(sizeof(int)*43);
-  for (i=0; i<43; i++) S[i]=0;
+  S=(SYMSET)malloc(sizeof(int)*46);
+  for (i=0; i<46; i++) S[i]=0;
   S[a]=1;  S[b]=1; S[c]=1;
   return S;
 }
 //---------------------------------------------------------------------------
 SYMSET SymSetNew(SYMBOL a, SYMBOL b, SYMBOL c, SYMBOL d) {
   SYMSET S; int i,k;
-  S=(SYMSET)malloc(sizeof(int)*43);
-  for (i=0; i<43; i++) S[i]=0;
+  S=(SYMSET)malloc(sizeof(int)*46);
+  for (i=0; i<46; i++) S[i]=0;
   S[a]=1;  S[b]=1; S[c]=1; S[d]=1;
   return S;
 }
 //---------------------------------------------------------------------------
 SYMSET SymSetNew(SYMBOL a, SYMBOL b, SYMBOL c, SYMBOL d,SYMBOL e) {
   SYMSET S; int i,k;
-  S=(SYMSET)malloc(sizeof(int)*43);
-  for (i=0; i<43; i++) S[i]=0;
+  S=(SYMSET)malloc(sizeof(int)*46);
+  for (i=0; i<46; i++) S[i]=0;
   S[a]=1;  S[b]=1; S[c]=1; S[d]=1; S[e]=1;
   return S;
 }
 //---------------------------------------------------------------------------
 SYMSET SymSetNew(SYMBOL a, SYMBOL b, SYMBOL c, SYMBOL d,SYMBOL e, SYMBOL f) {
   SYMSET S; int i,k;
-  S=(SYMSET)malloc(sizeof(int)*43);
-  for (i=0; i<43; i++) S[i]=0;
+  S=(SYMSET)malloc(sizeof(int)*46);
+  for (i=0; i<46; i++) S[i]=0;
   S[a]=1;  S[b]=1; S[c]=1; S[d]=1; S[e]=1; S[f]=1;
   return S;
 }
 //---------------------------------------------------------------------------
 SYMSET SymSetNULL() {
   SYMSET S; int i,n,k;
-  S=(SYMSET)malloc(sizeof(int)*43);
-  for (i=0; i<43; i++) S[i]=0;
+  S=(SYMSET)malloc(sizeof(int)*46);
+  for (i=0; i<46; i++) S[i]=0;
   return S;
 }
 //---------------------------------------------------------------------------
@@ -316,6 +319,20 @@ void ENTER(OBJECTS K, int LEV, int &TX, int &DX) { /*ENTER OBJECT INTO TABLE*/
   }
 } /*ENTER*/
 //---------------------------------------------------------------------------
+void EnterArray(int LEV, int &TX, int &DX, int start, int end) { /*ENTER OBJECT INTO TABLE*/
+  TX++;
+  strcpy(TABLE[TX].NAME,ID);
+  TABLE[TX].KIND=ARRAY;
+  TABLE[TX].vp.LEVEL=LEV;
+  TABLE[TX].vp.ADR=DX;//数组首地址
+  TABLE[TX].vp.SIZE=end;
+  TABLE[TX].upbound = end;//数组上界
+  DX += (end - start);//连续内存地址分配给该数组
+} /*ENTER*/
+
+
+
+//---------------------------------------------------------------------------
 int POSITION(ALFA ID, int TX) { /*FIND IDENTIFIER IN TABLE*/
   int i=TX;
   strcpy(TABLE[0].NAME,ID);
@@ -327,18 +344,49 @@ void ConstDeclaration(int LEV,int &TX,int &DX) {
   if (SYM==IDENT) {
     GetSym();
     if (SYM==EQL||SYM==BECOMES) {
-	  if (SYM==BECOMES) Error(1);
-	  GetSym();
-	  if (SYM==NUMBER) { ENTER(CONSTANT,LEV,TX,DX); GetSym(); }
-	  else Error(2);
+      if (SYM==BECOMES) Error(1);
+      GetSym();
+      if (SYM==NUMBER) { ENTER(CONSTANT,LEV,TX,DX); GetSym(); }
+      else Error(2);
     }
     else Error(3);
   }
   else Error(4);
 } /*ConstDeclaration()*/
 //---------------------------------------------------------------------------
+
+
 void VarDeclaration(int LEV,int &TX,int &DX) {
-  if (SYM==IDENT) { ENTER(VARIABLE,LEV,TX,DX); GetSym(); }
+  if (SYM==IDENT) {
+    GetSym(); 
+    int upbound;
+    /*加入[]判断*/
+    if(SYM == lbrack){
+      GetSym(); 
+      switch (SYM){
+      case IDENT:
+        upbound = TABLE[POSITION(ID,TX)].VAL;
+        break;
+      case NUMBER:
+        upbound = NUM;
+        break;
+      case PLUS:
+        upbound = NUM;
+        break;
+      case MINUS:
+        upbound = -NUM;
+        break;
+      }
+      GetSym(); 
+      if(SYM == rbrack){
+        EnterArray(LEV,TX,DX,0,upbound);
+      }else{
+        Error(31);
+      }
+    }else{
+      ENTER(VARIABLE,LEV,TX,DX); GetSym(); 
+    }
+  }
   else Error(4);
 } /*VarDeclaration()*/
 //---------------------------------------------------------------------------
@@ -365,6 +413,19 @@ void FACTOR(SYMSET FSYS, int LEV, int &TX) {
 		  case CONSTANT: GEN(LIT,0,TABLE[i].VAL); break;
 		  case VARIABLE: GEN(LOD,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR); break;
 		  case PROCEDUR: Error(21); break;
+      case ARRAY:
+        GetSym();
+        if(SYM == lbrack){
+          GetSym();
+          isarr = true;
+          EXPRESSION(SymSetAdd(rbrack,FSYS),LEV,TX);
+          isarr = false;
+          GEN(LIT,0,TABLE[i].vp.ADR);
+          GEN(OPR,0,2);
+          GEN(LDA,LEV - TABLE[i].vp.LEVEL,0);
+          GetSym();
+        }
+        break;
 		}
 	  GetSym();
 	}
@@ -455,47 +516,6 @@ void EXPRESSION(SYMSET FSYS, int LEV, int &TX) {
       }
       else Error(45);
   }
-  // ↑↑↑ 新增部分 ↑↑↑// ↓↓↓ 新增部分 ↓↓↓
-  else if(SYM==PLUSPLUS){     // ++i
-      GetSym();
-      if(SYM==IDENT){
-          i=POSITION(ID,TX);
-          if(i==0) Error(11);
-          else if(TABLE[i].KIND!=VARIABLE){
-              Error(12);
-              i=0;
-          }
-          if(i!=0) GEN(LOD,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);
-          GEN(LIT,0,1);
-          GEN(OPR,0,2);
-          if(i!=0){
-              GEN(STO,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);
-              GEN(LOD,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);
-          }
-          GetSym();
-      }
-      else Error(45);
-  }
-  else if(SYM==MINUSMINUS){     // --i
-      GetSym();
-      if(SYM==IDENT){
-          i=POSITION(ID,TX);
-          if(i==0) Error(11);
-          else if(TABLE[i].KIND!=VARIABLE){
-              Error(12);
-              i=0;
-          }
-          if(i!=0) GEN(LOD,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);
-          GEN(LIT,0,1);
-          GEN(OPR,0,3);
-          if(i!=0){
-              GEN(STO,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);
-              GEN(LOD,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);
-          }
-          GetSym();
-      }
-      else Error(45);
-  }
   // ↑↑↑ 新增部分 ↑↑↑
   else TERM(SymSetUnion(FSYS,SymSetNew(PLUS,MINUS)),LEV,TX);
   while (SYM==PLUS || SYM==MINUS) {
@@ -503,6 +523,11 @@ void EXPRESSION(SYMSET FSYS, int LEV, int &TX) {
     TERM(SymSetUnion(FSYS,SymSetNew(PLUS,MINUS)),LEV,TX);
     if (ADDOP==PLUS) GEN(OPR,0,2);
     else GEN(OPR,0,3);
+  }
+  // 修改部分
+  if(isarr == true){
+    GEN(LIT,0,0);
+    GEN(OPR,0,3);
   }
 } /*EXPRESSION*/
 //---------------------------------------------------------------------------
@@ -537,12 +562,12 @@ void STATEMENT(SYMSET FSYS,int LEV,int &TX) {   /*STATEMENT*/
 			Error(12); i=0;
 		  }
                 GetSym();
-		if (SYM==BECOMES){
+		if (SYM==BECOMES){ // a:=
                         GetSym();
 			EXPRESSION(FSYS,LEV,TX);
 			if (i!=0) GEN(STO,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);
 		}
-		else if (SYM==PLUSBECOMES){ //codes for +=
+		else if (SYM==PLUSBECOMES){ // a+=
                         GetSym(); //获取到右边的表达式
 			if (i!=0){ //若变量存在
                                 GEN(LOD,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR); //将该变量取出到栈顶
@@ -551,7 +576,7 @@ void STATEMENT(SYMSET FSYS,int LEV,int &TX) {   /*STATEMENT*/
                                 GEN(STO,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR); //将栈顶元素作为变量的值进行保存
                         }
 		}
-		else if(SYM==MINUSBECOMES){ //codes for -=
+		else if(SYM==MINUSBECOMES){ // a-=
                         GetSym(); //获取到右边的表达式
 			if (i!=0){ //若变量存在
                                 GEN(LOD,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR); //将该变量取出到栈顶
@@ -560,24 +585,39 @@ void STATEMENT(SYMSET FSYS,int LEV,int &TX) {   /*STATEMENT*/
                                 GEN(STO,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR); //将栈顶元素作为变量的值进行保存
                         }
 		}
-                else if (SYM==PLUSPLUS){
-                        if(i!=0){
-                                GEN(LOD,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);//将变量A入栈
-                                GEN(LIT,0,1);//设置自增量1
-                                GEN(OPR,0,2);//将栈顶两元素相加，结果放置栈顶（即A+1）
-                                GEN(STO,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);//保存自增后的值到A（完成A++操作）
-                        }
-                        GetSym();//加上这个使得能够读取自增符号后面的分号
-                }
-                else if (SYM==MINUSMINUS){
-                        if(i!=0){
-                                GEN(LOD,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);//将变量A入栈
-                                GEN(LIT,0,1);//设置自减量1
-                                GEN(OPR,0,3);//将栈顶两元素减，结果放置栈顶（即A-1）
-                                GEN(STO,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);//保存自增后的值到A（完成A--操作）
-                        }
-                        GetSym();//加上这个使得能够读取自减符号后面的分号
-                }
+    else if (SYM==PLUSPLUS){ // a++
+        if(i!=0){
+                GEN(LOD,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);//将变量A入栈
+                GEN(LIT,0,1);//设置自增量1
+                GEN(OPR,0,2);//将栈顶两元素相加，结果放置栈顶（即A+1）
+                GEN(STO,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);//保存自增后的值到A（完成A++操作）
+        }
+        GetSym();//加上这个使得能够读取自增符号后面的分号
+    }
+    else if (SYM==MINUSMINUS){ // a--
+      if(i!=0){
+              GEN(LOD,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);//将变量A入栈
+              GEN(LIT,0,1);//设置自减量1
+              GEN(OPR,0,3);//将栈顶两元素减，结果放置栈顶（即A-1）
+              GEN(STO,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);//保存自增后的值到A（完成A--操作）
+      }
+      GetSym();//加上这个使得能够读取自减符号后面的分号
+    }
+    else if (SYM==lbrack){ // a[]
+      if(i!=0){
+          GetSym();
+          isarr = true;
+          EXPRESSION(FSYS,LEV,TX);
+          isarr = false;
+          GEN(LIT,0,TABLE[i].vp.ADR);
+          GEN(OPR,0,2);
+          GetSym();
+          GetSym();
+          EXPRESSION(FSYS,LEV,TX);
+          GEN(STA,LEV - TABLE[i].vp.LEVEL,0);
+      }
+      GetSym();//加上这个使得能够读取自减符号后面的分号
+    }
 		else Error(13);
 		break;
 	case READSYM:
@@ -590,8 +630,17 @@ void STATEMENT(SYMSET FSYS,int LEV,int &TX) {   /*STATEMENT*/
 			else i=0;
 			if (i==0) Error(35);
 			else {
-			  GEN(OPR,0,16);
-			  GEN(STO,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);
+        if(SYM == lbrack){
+          GetSym();
+          EXPRESSION(FSYS,LEV,TX);
+          GEN(LIT,0,TABLE[i].vp.ADR);
+          GEN(OPR,0,2);
+          GEN(OPR,0,16);
+          GEN(STA,LEV - TABLE[i].vp.LEVEL,0);
+        }else{
+          GEN(OPR,0,16);
+			    GEN(STO,LEV-TABLE[i].vp.LEVEL,TABLE[i].vp.ADR);
+        }
 			}
 			GetSym();
 		  }while(SYM==COMMA);
@@ -672,10 +721,10 @@ void STATEMENT(SYMSET FSYS,int LEV,int &TX) {   /*STATEMENT*/
        case FORSYM:
                 GetSym();//获取赋值语句表达式
                 i=POSITION(ID,TX);//获取变量位置
-		if (i==0) {
-                        Form1->printfs("following for must be an ident.");
-                        Error(11);
-                }
+                if (i==0) {
+                                    Form1->printfs("following for must be an ident.");
+                                    Error(11);
+                            }
 		else if (TABLE[i].KIND!=VARIABLE) { /*ASSIGNMENT TO NON-VARIABLE*/
 			Error(12);
                 }
@@ -811,7 +860,10 @@ void Block(int LEV, int TX, SYMSET FSYS) {
         VarDeclaration(LEV,TX,DX);
         while (SYM==COMMA) { GetSym(); VarDeclaration(LEV,TX,DX); }
 	    if (SYM==SEMICOLON) GetSym();
-	    else Error(5);
+	    else {
+        Error(5);
+        Form1->printfs("ERROR ~~~");
+      }
       }while(SYM==IDENT);
     }
     while ( SYM==PROCSYM) {
@@ -888,7 +940,14 @@ void Interpret() {
 	      B=T+1; P=I.A; break;
 	  case INI: T=T+I.A;  break;
 	  case JMP: P=I.A; break;
-      case JPC: if (S[T]==0) P=I.A;  T--;  break;
+    case JPC: if (S[T]==0) P=I.A;  T--;  break;
+    case STA: 
+      T--; 
+      S[BASE(I.L,B,S)+I.A+S[T-1]] = S[T];
+      break;
+    case LDA: 
+      S[T-1] = S[BASE(I.L,B,S)+I.A+S[T-1]];
+      break;
     } /*switch*/
   }while(P!=0);
   Form1->printfs("~~~ END PL0 ~~~");
@@ -925,11 +984,13 @@ void __fastcall TForm1::ButtonRunClick(TObject *Sender) {
   SSYM['=']=EQL;       SSYM[',']=COMMA;
   SSYM['.']=PERIOD;    //SSYM['#']=NEQ;
   SSYM[';']=SEMICOLON;
+  SSYM['['] = lbrack; SSYM[']'] = rbrack;
 
   strcpy(MNEMONIC[LIT],"LIT");   strcpy(MNEMONIC[OPR],"OPR");
   strcpy(MNEMONIC[LOD],"LOD");   strcpy(MNEMONIC[STO],"STO");
   strcpy(MNEMONIC[CAL],"CAL");   strcpy(MNEMONIC[INI],"INI");
   strcpy(MNEMONIC[JMP],"JMP");   strcpy(MNEMONIC[JPC],"JPC");
+  strcpy(MNEMONIC[STA],"STA");   strcpy(MNEMONIC[LDA],"LDA");
 
   DECLBEGSYS=(int*)malloc(sizeof(int)*33);
   STATBEGSYS=(int*)malloc(sizeof(int)*33);
@@ -961,7 +1022,10 @@ void __fastcall TForm1::ButtonRunClick(TObject *Sender) {
 	  if (SYM!=IDENT) Error(0);
 	  else {
 		GetSym();
-		if (SYM!=SEMICOLON) Error(5);
+		if (SYM!=SEMICOLON) {
+      Error(5);
+      Form1->printfs("ERROR here");
+    }
 		else GetSym();
 	  }
 	}

@@ -1,70 +1,20 @@
 === COMPILE PL0 ===
   0 PROGRAM E06; 
   0 VAR A,B,C; 
+***       ^5
+***         ^5
   1 BEGIN 
+***     ^5
   2 	B :=0;  
-  4 	FOR A:=0 TO 5 DO  
- 10 	BEGIN	 
- 10 		B:=B+1; 
- 14 		WRITE(B);  
- 17 	END;  
- 22 	FOR C:=10 DOWNTO 5 DO  
- 28 	BEGIN	 
- 28 		B:=B-1; 
- 32 		WRITE(B);  
- 35 	END;  
- 40 END. 
-  0  JMP   0   1
-  1  INI   0   6
-  2  LIT   0   0
-  3  STO   0   4
-  4  LIT   0   0
-  5  STO   0   3
-  6  LOD   0   3
-  7  LIT   0   5
-  8  OPR   0  10
-  9  JPC   0  22
- 10  LOD   0   4
- 11  LIT   0   1
- 12  OPR   0   2
- 13  STO   0   4
- 14  LOD   0   4
- 15  OPR   0  14
- 16  OPR   0  15
- 17  LOD   0   3
- 18  LIT   0   1
- 19  OPR   0   2
- 20  STO   0   3
- 21  JMP   0   6
- 22  LIT   0  10
- 23  STO   0   5
- 24  LIT   0   5
- 25  LOD   0   5
- 26  OPR   0  10
- 27  JPC   0  40
- 28  LOD   0   4
- 29  LIT   0   1
- 30  OPR   0   3
- 31  STO   0   4
- 32  LOD   0   4
- 33  OPR   0  14
- 34  OPR   0  15
- 35  LOD   0   5
- 36  LIT   0   1
- 37  OPR   0   3
- 38  STO   0   5
- 39  JMP   0  24
- 40  OPR   0   0
-~~~ RUN PL0 ~~~
-1
-2
-3
-4
-5
-4
-3
-2
-1
-0
-~~~ END PL0 ~~~
-
+  6 	FOR A:=0 TO 5 DO  
+ 16 	BEGIN	 
+ 16 		B:=B+1; 
+ 22 		WRITE(B);  
+ 27 	END;  
+ 32 	FOR C:=10 DOWNTO 5 DO  
+ 42 	BEGIN	 
+ 42 		B:=B-1; 
+ 48 		WRITE(B);  
+ 53 	END;  
+ 58 END. 
+ERROR IN PL/0 PROGRAM

@@ -1,0 +1,11 @@
+PROGRAM E10;
+VAR A[10],I;
+BEGIN
+	I:=0;
+	FOR I:=0 TO 9 DO 
+	BEGIN	
+		A[I]:=I;
+		WRITE(A[I]);
+		I++;
+	END; 
+END.
